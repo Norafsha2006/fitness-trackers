@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fitness Tracker</title>
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <div class="app">
+    <header>
+      <h1>💪 Fitness Tracker</h1>
+      <p class="subtitle">Track your workouts, diet, and health</p>
+    </header>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('dashboard', this)">📊 Dashboard</button>
+      <button class="tab" onclick="showTab('workout', this)">🏋️ Log Workout</button>
+      <button class="tab" onclick="showTab('activity', this)">🏃 Activity</button>
+      <button class="tab" onclick="showTab('diet', this)">🥗 Diet</button>
+      <button class="tab" onclick="showTab('bmi', this)">⚖️ BMI</button>
+      <button class="tab" onclick="showTab('history', this)">📋 History</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard" class="section active">
+      <div class="metric-grid" id="metrics"></div>
+      <div class="card">
+        <h2>Weekly Goals</h2>
+        <div id="goals-section"></div>
+      </div>
+      <div class="chart-grid">
+        <div class="card">
+          <h2>Weight Trend</h2>
+          <canvas id="weightChart"></canvas>
+        </div>
+        <div class="card">
+          <h2>Calories This Week</h2>
+          <canvas id="calChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Recent Workouts</h2>
+        <div id="recent-list"></div>
+      </div>
+    </div>
+
+    <!-- LOG WORKOUT -->
+    <div id="tab-workout" class="section">
+      <div class="card">
+        <h2>Log a Workout</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Exercise Name</label>
+            <input type="text" id="ex-name" placeholder="e.g. Bench Press" />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="ex-cat">
+              <option value="strength">Strength</option>
+              <option value="cardio">Cardio</option>
+              <option value="flexibility">Flexibility</option>
+              <option value="sports">Sports</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row three">
+          <div class="form-group">
+            <label>Duration (min)</label>
+            <input type="number" id="ex-dur" placeholder="30" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Sets</label>
+            <input type="number" id="ex-sets" placeholder="3" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Reps</label>
+            <input type="number" id="ex-reps" placeholder="10" min="1" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Calories Burned</label>
+            <input type="number" id="ex-cal" placeholder="200" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="ex-date" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes (optional)</label>
+          <input type="text" id="ex-notes" placeholder="How did it feel?" />
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" onclick="saveWorkout()">💾 Save Workout</button>
+          <button class="btn" onclick="clearWorkoutForm()">✕ Clear</button>
+        </div>
+        <p class="success-msg" id="save-msg">✅ Workout saved!</p>
+      </div>
+    </div>
+
+    <!-- ACTIVITY -->
+    <div id="tab-activity" class="section">
+      <div class="card">
+        <h2>Today's Activity</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Steps</label>
+            <input type="number" id="act-steps" placeholder="0" />
+          </div>
+          <div class="form-group">
+            <label>Water (glasses)</label>
+            <input type="number" id="act-water" placeholder="0" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Sleep (hours)</label>
+            <input type="number" id="act-sleep" placeholder="7" step="0.5" />
+          </div>
+          <div class="form-group">
+            <label>Weight (kg)</label>
+            <input type="number" id="act-weight" placeholder="70" step="0.1" />
+          </div>
+        </div>
+        <button class="btn primary" onclick="saveActivity()">💾 Save Today</button>
+        <p class="success-msg" id="act-msg">✅ Activity saved!</p>
+      </div>
+      <div class="card">
+        <h2>Weekly Steps</h2>
+        <canvas id="stepsChart"></canvas>
+      </div>
+    </div>
+
+    <!-- DIET -->
+    <div id="tab-diet" class="section">
+      <div class="card">
+        <h2>Daily Calorie Goal</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Calorie Goal (kcal/day)</label>
+            <input type="number" id="cal-goal" placeholder="2000" />
+          </div>
+          <div class="form-group" style="justify-content:flex-end;display:flex;align-items:flex-end;">
+            <button class="btn primary" onclick="saveCalGoal()">🎯 Set Goal</button>
+          </div>
+        </div>
+        <p class="success-msg" id="goal-msg">✅ Goal saved!</p>
+      </div>
+      <div class="card">
+        <h2>Log a Meal</h2>
+        <div class="form-row three">
+          <div class="form-group">
+            <label>Food Item</label>
+            <input type="text" id="meal-name" placeholder="e.g. Oatmeal" />
+          </div>
+          <div class="form-group">
+            <label>Calories (kcal)</label>
+            <input type="number" id="meal-cal" placeholder="300" />
+          </div>
+          <div class="form-group">
+            <label>Meal Type</label>
+            <select id="meal-type">
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+              <option value="snack">Snack</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Protein (g)</label>
+            <input type="number" id="meal-protein" placeholder="0" />
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="meal-date" />
+          </div>
+        </div>
+        <button class="btn primary" onclick="saveMeal()">💾 Log Meal</button>
+        <p class="success-msg" id="meal-msg">✅ Meal logged!</p>
+      </div>
+      <div class="card">
+        <h2>Today's Meals</h2>
+        <div id="meals-today"></div>
+      </div>
+    </div>
+
+    <!-- BMI -->
+    <div id="tab-bmi" class="section">
+      <div class="card">
+        <h2>BMI Calculator</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Weight (kg)</label>
+            <input type="number" id="bmi-weight" placeholder="70" step="0.1" />
+          </div>
+          <div class="form-group">
+            <label>Height (cm)</label>
+            <input type="number" id="bmi-height" placeholder="170" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="bmi-age" placeholder="25" />
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="bmi-gender">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn primary" onclick="calcBMI()">🧮 Calculate BMI</button>
+        <div id="bmi-result"></div>
+      </div>
+      <div class="card">
+        <h2>BMI Scale</h2>
+        <div class="bmi-scale">
+          <div class="scale-block blue">Underweight<br/>&lt; 18.5</div>
+          <div class="scale-block green">Normal<br/>18.5–24.9</div>
+          <div class="scale-block amber">Overweight<br/>25–29.9</div>
+          <div class="scale-block red">Obese<br/>≥ 30</div>
+        </div>
+        <p id="ideal-weight" class="ideal-text">Enter your height above to see ideal weight range.</p>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="tab-history" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2>Workout History</h2>
+          <button class="btn danger" onclick="clearWorkouts()">🗑️ Clear All</button>
+        </div>
+        <div id="history-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h2>Meal History</h2>
+          <button class="btn danger" onclick="clearMeals()">🗑️ Clear All</button>
+        </div>
+        <div id="meal-history"></div>
+      </div>
+    </div>
+
+  </div><!-- end .app -->
+
+  <script src="script.js"></script>
+</body>
+</html>
