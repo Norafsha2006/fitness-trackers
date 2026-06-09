@@ -10,7 +10,7 @@ A web-based Fitness Tracker built using HTML, CSS, and JavaScript.
 - Responsive design
 
 ## Live Demo
-fitness-tracker-csnetlifyapp.netlify.app
+https://fitness-tracker-csnetlifyapp.netlify.app
 
 ## Technologies Used
 - HTML
